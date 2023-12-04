@@ -613,6 +613,17 @@ ATTRIBUTE_NOINLINE bool Fuzzer::ExecuteCallback(const uint8_t *Data,
     RunningUserCallback = true;
     CBRes = CB(DataCopy, Size);
     RunningUserCallback = false;
+
+    // Dissfuzz
+    std::string exec_hash = TPC.GetExecutionHash(Options.PofwSeed);
+    FILE *tmpfp = fopen(Options.PofwPath.c_str(), "a+");
+    if (tmpfp != NULL) {
+      fprintf(tmpfp, "%s\n", exec_hash.c_str());
+      fclose(tmpfp);
+    } else {
+      Printf("[ERROR] fopen for pofw failed\n");
+    }
+
     UnitStopTime = system_clock::now();
     assert(CBRes == 0 || CBRes == -1);
     HasMoreMallocsThanFrees = AllocTracer.Stop();

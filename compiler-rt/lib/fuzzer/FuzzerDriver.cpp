@@ -806,6 +806,9 @@ int FuzzerDriver(int *argc, char ***argv, UserCallback Callback) {
                         ReadCorpora(*Inputs, {}));
   }
 
+  // DissFuzz
+  Options.PofwSeed = Seed;
+
   Random Rand(Seed);
   auto *MD = new MutationDispatcher(Rand, Options);
   auto *Corpus = new InputCorpus(Options.OutputCorpus, Entropic);

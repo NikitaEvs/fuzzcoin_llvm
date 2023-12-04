@@ -408,6 +408,48 @@ static size_t InternalStrnlen2(const char *S1, const char *S2) {
   return Len;
 }
 
+// DissFuzz
+void xor_bytes(uint8_t *p1, uint8_t *p2, size_t len) {
+  unsigned int i = 0;
+  while (len--) {
+    *(p1 + i) = *(p1 + i) ^ *(p2 + i);
+    i++;
+  }
+}
+
+// DissFuzz
+std::string TracePC::GetExecutionHash(unsigned pofw_seed) {
+  uint8_t PrevExecHash[kSHA1NumBytes];
+  uint8_t ExecHash[kSHA1NumBytes];
+  uint8_t IV[4];
+
+  // set IV with seed
+  IV[0] = (uint8_t)(pofw_seed & 0xff);
+  IV[1] = (uint8_t)((pofw_seed >> 8) & 0xff);
+  IV[2] = (uint8_t)((pofw_seed >> 16) & 0xff);
+  IV[3] = (uint8_t)((pofw_seed >> 24) & 0xff);
+
+  // init
+  memset(PrevExecHash, 0, kSHA1NumBytes);
+  memset(ExecHash, 0, kSHA1NumBytes);
+
+  // InlineCounterMap Hash
+  for (size_t i = 0; i < NumModules; i++) {
+    uint8_t *Beg = Modules[i].Start();
+    size_t Size = Modules[i].Stop() - Beg;
+    ComputeSHA1(Beg, Size, PrevExecHash);
+
+    // chain all per-module hashes
+    xor_bytes(ExecHash, PrevExecHash, kSHA1NumBytes);
+  }
+
+  // merge with IV
+  ComputeSHA1(IV, 4, PrevExecHash);
+  xor_bytes(ExecHash, PrevExecHash, kSHA1NumBytes);
+
+  return Sha1ToString(ExecHash);
+}
+
 void TracePC::ClearInlineCounters() {
   IterateCounterRegions([](const Module::Region &R){
     if (R.Enabled)

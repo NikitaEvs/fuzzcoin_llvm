@@ -62,6 +62,11 @@ struct FuzzingOptions {
   std::string FeaturesDir;
   std::string MutationGraphFile;
   std::string StopFile;
+
+  // Dissfuzz
+  std::string PofwPath = "pofw";
+  unsigned PofwSeed = 0;
+
   bool SaveArtifacts = true;
   bool PrintNEW = true; // Print a status line when new units are found;
   bool PrintNewCovPcs = false;

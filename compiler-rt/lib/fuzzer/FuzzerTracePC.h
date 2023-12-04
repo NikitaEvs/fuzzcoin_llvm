@@ -87,6 +87,9 @@ class TracePC {
     ClearInlineCounters();
   }
 
+  // DissFuzz
+  std::string GetExecutionHash(unsigned pofw_seed);
+
   void ClearInlineCounters();
 
   void UpdateFeatureSet(size_t CurrentElementIdx, size_t CurrentElementSize);
